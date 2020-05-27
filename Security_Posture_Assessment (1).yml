@@ -1,0 +1,176 @@
+---
+- name: Install Tools
+  hosts: local
+  become: yes
+  
+  tasks:
+  - name: Update and Install Dependancies
+    apt:
+      update_cache: yes
+      pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - software-properties-common
+      - python-docker
+
+  - name: Add Docker GPG Signing Key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+      state: present
+
+  - name: Install Docker Engine
+    apt:
+      update_cache: yes
+      pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+
+  - name: Install Docker Compose
+    get_url:
+      url: https://github.com/docker/compose/releases/download/1.25.5/docker-compose-Linux-x86_64
+      dest: /usr/local/bin/docker-compose
+
+  - name: Set Docker Compose Executable
+    file:
+      path: /usr/local/bin/docker-compose
+      mode: '0775'
+
+- name: Netdisco Setup
+  hosts: local
+  become: yes
+
+  tasks:
+  - name: Add Netdisco Group
+    group:
+      name: netdisco
+      gid: 901
+      state: present
+
+  - name: Add Netdisco User
+    user:
+      name: netdisco
+      group: netdisco
+      uid: 901
+
+  - name: Add Netdisco Log Folder
+    file:
+      path: /ndimage/netdisco/logs
+      state: directory
+
+  - name: Add Netdisco Config Folder
+    file:
+      path: /ndimage/netdisco/config
+      state: directory
+
+  - name: Add Netdisco Site_Local Folder
+    file:
+      path: /ndimage/netdisco/nd-site-local
+      state: directory
+
+  - name: Change Owner to Netdisco
+    file:
+      path: /ndimage
+      state: directory
+      recurse: yes
+      owner: netdisco
+      group: netdisco
+
+  - name: Download Netdisco Docker-Compose
+    get_url:
+      url: https://tinyurl.com/nd2-dockercompose
+      dest: /ndimage/docker-compose.yml
+
+  - name: Bring Up Netdisco
+    command: docker-compose -f /ndimage/docker-compose.yml -p netdisco up -d
+
+- name: Nessus Setup
+  hosts: local
+  become: yes
+
+  tasks:
+  - name: Bring Up Nessus
+    docker_container:
+      name: nessus
+      image: tbconsulting/nessus:1.0
+      ports:
+        - 8834:8834
+
+
+- name: UF Setup
+  hosts: local
+  become: yes
+  
+  tasks:
+
+  - name: wget UF tar file from Splunk
+    command: wget -O splunkforwarder-8.0.3-a6754d8441bf-Linux-x86_64.tgz 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=8.0.3&product=universalforwarder&filename=splunkforwarder-8.0.3-a6754d8441bf-Linux-x86_64.tgz&wget=true'
+
+  - name: Untar file
+    command: chdir=/home/dakota/SecurityPostureAssessment tar -xvzf splunkforwarder-8.0.3-a6754d8441bf-Linux-x86_64.tgz
+  
+  - name: start splunk
+    command: chdir=/home/dakota/SecurityPostureAssessment/splunkforwarder/bin ./splunk start --accept-license
+ 
+- name: Suricata Setup
+  hosts: local
+  become: yes
+  
+  tasks:
+
+  - name: Update and Install Dependancies
+    apt:
+      update_cache: yes
+      pkg:
+      - libpcre3-dbg
+      - libpcre3-dev
+      - autoconf 
+      - automake 
+      - libtool 
+      - libpcap-dev 
+      - libnet1-dev 
+      - libyaml-dev 
+      - libjansson4 
+      - libcap-ng-dev 
+      - libmagic-dev 
+      - libjansson-dev 
+      - zlib1g-dev 
+      - pkg-config 
+      - rustc 
+      - cargo
+      - python-apt
+
+  - name: wget Suricata tar file
+    command: chdir=/home/dakota/SecurityPostureAssessment wget https://www.openinfosecfoundation.org/download/suricata-5.0.0.tar.gz
+
+  - name: Untar file
+    command: chdir=/home/dakota/SecurityPostureAssessment tar -xvzf suricata-5.0.0.tar.gz 
+  
+  - name: copy files over to /etc/suricata
+    command: chdir=/home/dakota/SecurityPostureAssessment/suricata-5.0.0/etc cp reference.config /etc/suricata
+
+  - name: copy files over over to /etc/suricata
+    command: chdir=/home/dakota/SecurityPostureAssessment/suricata-5.0.0/etc cp classification.config /etc/suricata
+
+  - name: copy files over over to /etc/suricata
+    command: chdir=/home/dakota/SecurityPostureAssessment/suricata-5.0.0 cp suricata.yaml.in /etc/suricata
+
+  - name: Set up suricata repository
+    apt_repository:
+        repo: ppa:oisf/suricata-stable
+
+  - name: install suricata
+    apt:
+      update_cache: yes
+      name: suricata
+      state: present
+  
+  - name: start suricata
+    command: chdir=/home/dakota/SecurityPostureAssessment systemctl start suricata
