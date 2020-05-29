@@ -30,16 +30,19 @@
   become: yes
   
   tasks:
+  - name: git pull deb file
+    git:
+      repo: https://github.com/tbcsec/Splunkforwarder.git
+      dest: /home/dakota/MonitoringServer
 
-  - name: wget UF tar file from Splunk
-    command: wget -O splunkforwarder-8.0.3-a6754d8441bf-Linux-x86_64.tgz 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=8.0.3&product=universalforwarder&filename=splunkforwarder-8.0.3-a6754d8441bf-Linux-x86_64.tgz&wget=true'
+  - name: apt install UF
+    apt:
+      deb: /home/dakota/MonitoringServer/splunkforwarder-8.0.3-a6754d8441bf-linux-2.6-amd64.deb
 
-  - name: Untar file
-    command: chdir=/home/dakota/SecurityPostureAssessment tar -xvzf splunkforwarder-8.0.3-a6754d8441bf-Linux-x86_64.tgz
-  
   - name: start splunk
-    command: chdir=/home/dakota/SecurityPostureAssessment/splunkforwarder/bin ./splunk start --accept-license
- 
+    command: chdir=/opt/splunkforwarder/bin ./splunk start --accept-license
+
+  
 - name: Suricata Setup
   hosts: local
   become: yes
