@@ -22,21 +22,21 @@
       name: nessusd
 
 
-- name: UF Setup
+- name: Splunk Universal Forwarder Setup
   hosts: local
   become: yes
   
   tasks:
-  - name: git pull deb file
+  - name: Download the Universal Forwarder
     git:
       repo: https://github.com/tbcsec/Splunkforwarder.git
       dest: /tmp/splunk_installer
 
-  - name: apt install UF
+  - name: Install the Universal Forwarder
     apt:
       deb: /tmp/splunk_installer/splunkforwarder-8.0.3-a6754d8441bf-linux-2.6-amd64.deb
 
-  - name: start splunk
+  - name: Start the Universal Forwarder
     command: chdir=/opt/splunkforwarder/bin ./splunk start --accept-license
 
 
