@@ -45,42 +45,6 @@
   become: yes
   
   tasks:
-  - name: Update and Install Dependancies
-    apt:
-      update_cache: yes
-      pkg:
-      - libpcre3-dbg
-      - libpcre3-dev
-      - autoconf 
-      - automake 
-      - libtool 
-      - libpcap-dev 
-      - libnet1-dev 
-      - libyaml-dev 
-      - libjansson4 
-      - libcap-ng-dev 
-      - libmagic-dev 
-      - libjansson-dev 
-      - zlib1g-dev 
-      - pkg-config 
-      - rustc 
-      - cargo
-      - python-apt
-
-  - name: wget Suricata tar file
-    command: chdir=/home/dakota/SecurityPostureAssessment wget https://www.openinfosecfoundation.org/download/suricata-5.0.0.tar.gz
-
-  - name: Untar file
-    command: chdir=/home/dakota/SecurityPostureAssessment tar -xvzf suricata-5.0.0.tar.gz 
-  
-  - name: copy files over to /etc/suricata
-    command: chdir=/home/dakota/SecurityPostureAssessment/suricata-5.0.0/etc cp reference.config /etc/suricata
-
-  - name: copy files over over to /etc/suricata
-    command: chdir=/home/dakota/SecurityPostureAssessment/suricata-5.0.0/etc cp classification.config /etc/suricata
-
-  - name: copy files over over to /etc/suricata
-    command: chdir=/home/dakota/SecurityPostureAssessment/suricata-5.0.0 cp suricata.yaml.in /etc/suricata
 
   - name: Set up suricata repository
     apt_repository:
@@ -93,4 +57,4 @@
       state: present
   
   - name: start suricata
-    command: chdir=/home/dakota/SecurityPostureAssessment systemctl start suricata
+    command: systemctl start suricata
