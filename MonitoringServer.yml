@@ -26,8 +26,8 @@
   
   tasks:
   - name: Download the Universal Forwarder
-    git:
-      repo: https://github.com/tbcsec/Splunkforwarder.git
+    get_url:
+      url: https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=8.0.4&product=universalforwarder&filename=splunkforwarder-8.0.4-767223ac207f-linux-2.6-amd64.deb&wget=true
       dest: /tmp/splunk_installer
 
   - name: Install the Universal Forwarder
@@ -44,15 +44,18 @@
   
   tasks:
 
-  - name: Set up suricata repository
+  - name: Set Up Suricata Repository
     apt_repository:
         repo: ppa:oisf/suricata-stable
 
-  - name: install suricata
+  - name: Install Suricata
     apt:
       update_cache: yes
       name: suricata
       state: present
   
-  - name: start suricata
-    command: systemctl start suricata
+  - name: Start Suricata and Enable Auto-Start
+    systemd:
+      state: started
+      enabled: yes
+      name: suricata
