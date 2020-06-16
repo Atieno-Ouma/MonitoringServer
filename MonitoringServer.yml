@@ -28,11 +28,11 @@
   - name: Download the Universal Forwarder
     get_url:
       url: https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=8.0.4&product=universalforwarder&filename=splunkforwarder-8.0.4-767223ac207f-linux-2.6-amd64.deb&wget=true
-      dest: /tmp/splunk_installer
+      dest: /tmp/splunk_installer.deb
 
   - name: Install the Universal Forwarder
     apt:
-      deb: /tmp/splunk_installer/splunkforwarder-8.0.3-a6754d8441bf-linux-2.6-amd64.deb
+      deb: /tmp/splunk_installer.deb
 
   - name: Start the Universal Forwarder
     command: chdir=/opt/splunkforwarder/bin ./splunk start --accept-license
